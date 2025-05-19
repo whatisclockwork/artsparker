@@ -119,11 +119,16 @@ export const ArtworkGrid: React.FC<ArtworkGridProps> = ({
         <Text style={styles.itemAuthor} numberOfLines={1}>
           by {item.author.name || 'Anonymous'}
         </Text>
-        {item.author.profileLink ? (
-          <Text style={styles.profileLink} numberOfLines={1}>
-            {item.author.profileLink}
-          </Text>
-        ) : null}
+        {item.author.profileLink && (
+          <TouchableOpacity 
+            onPress={() => Linking.openURL(item.author.profileLink!)}
+            style={styles.profileLinkContainer}
+          >
+            <Text style={styles.profileLink} numberOfLines={1}>
+              {item.author.profileLink}
+            </Text>
+          </TouchableOpacity>
+        )}
         <TouchableOpacity
           style={styles.likeButton}
           onPress={() => handleLike(item.id)}
@@ -191,11 +196,13 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     marginBottom: 4,
   },
+  profileLinkContainer: {
+    marginBottom: 8,
+  },
   profileLink: {
     fontFamily: 'PressStart2P',
-    fontSize: 6,
+    fontSize: 10,
     color: COLORS.textTertiary,
-    marginBottom: 8,
   },
   likeButton: {
     flexDirection: 'row',
