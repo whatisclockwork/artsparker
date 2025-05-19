@@ -20,7 +20,7 @@
     "@supabase/storage-js": "^2.7.3",
     "@supabase/supabase-js": "^2.39.7",
     "base64-js": "^1.5.1",
-    "expo": "~52.0.1",
+    "expo": "~53.0.0",
     "expo-ads-admob": "~13.0.0",
     "expo-blur": "~12.9.1",
     "expo-camera": "~13.6.0",
