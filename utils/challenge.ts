@@ -14,14 +14,16 @@ type Submission = {
 type SubmitArtworkParams = {
   challengeId: string;
   title: string;
-  description: string;
+  description?: string;
   imageUri: string;
+  displayName: string;
+  profileLink?: string | null;
 };
 
 export async function getChallengeData() {
   try {
     const supabase = await getSupabaseClient();
-    
+
     const { data: challenges, error: challengeError } = await supabase
       .from('challenges')
       .select('*')
@@ -40,14 +42,14 @@ export async function getChallengeData() {
 
     const challenge = challenges[0];
 
-    // Get all submissions for the challenge
     const { data: submissions = [], error: submissionsError } = await supabase
       .from('submissions')
       .select(`
         id,
         image_url,
         title,
-        description,
+        display_name,
+        profile_link,
         votes,
         user_id,
         created_at
@@ -60,7 +62,6 @@ export async function getChallengeData() {
       throw submissionsError;
     }
 
-    // Get current user's votes
     const { data: { session } } = await supabase.auth.getSession();
     const userId = session?.user?.id;
 
@@ -70,7 +71,7 @@ export async function getChallengeData() {
         .from('votes')
         .select('submission_id')
         .eq('user_id', userId);
-      
+
       userVotes = (votes || []).reduce((acc: Record<string, boolean>, vote) => {
         acc[vote.submission_id] = true;
         return acc;
@@ -87,7 +88,8 @@ export async function getChallengeData() {
         title: sub.title || 'Untitled',
         author: {
           id: sub.user_id,
-          name: 'Artist'
+          name: sub.display_name || 'Artist',
+          profileLink: sub.profile_link || null
         },
         likes: sub.votes,
         hasLiked: !!userVotes[sub.id]
@@ -107,8 +109,10 @@ export async function getChallengeData() {
 export async function submitArtwork({
   challengeId,
   title,
-  description,
+  description = '',
   imageUri,
+  displayName,
+  profileLink = null
 }: SubmitArtworkParams): Promise<Submission> {
   try {
     if (challengeId === 'placeholder') {
@@ -177,6 +181,8 @@ export async function submitArtwork({
         title: title || 'Untitled',
         description,
         image_url: publicUrlData.publicUrl,
+        display_name: displayName,
+        profile_link: profileLink,
         votes: 0,
       })
       .select('*')
@@ -206,7 +212,7 @@ export async function submitArtwork({
 export async function likeArtwork(submissionId: string): Promise<void> {
   try {
     const supabase = await getSupabaseClient();
-    
+
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) {
       throw new Error('Must be logged in to vote');
@@ -220,7 +226,6 @@ export async function likeArtwork(submissionId: string): Promise<void> {
       .maybeSingle();
 
     if (existingVote) {
-      // Remove the vote
       const { error: deleteError } = await supabase
         .from('votes')
         .delete()
@@ -229,7 +234,6 @@ export async function likeArtwork(submissionId: string): Promise<void> {
 
       if (deleteError) throw deleteError;
     } else {
-      // Add the vote
       const { error: insertError } = await supabase
         .from('votes')
         .insert({
