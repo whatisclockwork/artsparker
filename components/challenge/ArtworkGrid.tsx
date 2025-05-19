@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  Image,
-  TouchableOpacity,
-  Dimensions,
-  Linking,
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  FlatList, 
+  Image, 
+  TouchableOpacity, 
+  Dimensions, 
+  Linking
 } from 'react-native';
 import { useSession } from '@/components/auth/AuthProvider';
 import { Heart } from 'lucide-react-native';
@@ -22,7 +22,7 @@ type Submission = {
   author: {
     id: string;
     name: string;
-    profileLink?: string | null;
+    profileLink?: string;
   };
   likes: number;
   hasLiked: boolean;
@@ -33,7 +33,7 @@ type ArtworkGridProps = {
   onRefresh: () => void;
 };
 
-export const ArtworkGrid: React.FC<ArtworkGridProps> = ({
+export const ArtworkGrid: React.FC<ArtworkGridProps> = ({ 
   submissions,
   onRefresh
 }) => {
@@ -60,7 +60,6 @@ export const ArtworkGrid: React.FC<ArtworkGridProps> = ({
 
     try {
       setLoadingLikes(prev => ({ ...prev, [submissionId]: true }));
-
       setLocalSubmissions(prev => prev.map(submission => {
         if (submission.id === submissionId) {
           const newHasLiked = !submission.hasLiked;
@@ -77,7 +76,6 @@ export const ArtworkGrid: React.FC<ArtworkGridProps> = ({
       onRefresh();
     } catch (error) {
       console.error('Error liking artwork:', error);
-
       setLocalSubmissions(prev => prev.map(submission => {
         if (submission.id === submissionId) {
           const newHasLiked = !submission.hasLiked;
@@ -112,7 +110,7 @@ export const ArtworkGrid: React.FC<ArtworkGridProps> = ({
   }
 
   const renderItem = ({ item }: { item: Submission }) => (
-    <View style={[styles.item, { width: itemWidth }]}>
+    <View style={[styles.item, { width: itemWidth }]}> 
       <Image source={{ uri: item.imageUrl }} style={styles.image} />
       <View style={styles.itemInfo}>
         <Text style={styles.itemTitle} numberOfLines={1}>
@@ -122,11 +120,7 @@ export const ArtworkGrid: React.FC<ArtworkGridProps> = ({
           by {item.author.name || 'Anonymous'}
         </Text>
         {item.author.profileLink ? (
-          <Text
-            style={styles.profileLink}
-            numberOfLines={1}
-            onPress={() => Linking.openURL(item.author.profileLink!)}
-          >
+          <Text style={styles.profileLink} numberOfLines={1}>
             {item.author.profileLink}
           </Text>
         ) : null}
@@ -195,13 +189,13 @@ const styles = StyleSheet.create({
     fontFamily: 'PressStart2P',
     fontSize: 8,
     color: COLORS.textSecondary,
+    marginBottom: 4,
   },
   profileLink: {
     fontFamily: 'PressStart2P',
-    fontSize: 7,
-    color: COLORS.accent,
-    textDecorationLine: 'underline',
-    marginBottom: 6,
+    fontSize: 6,
+    color: COLORS.textTertiary,
+    marginBottom: 8,
   },
   likeButton: {
     flexDirection: 'row',
