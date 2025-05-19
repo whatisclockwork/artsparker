@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  FlatList, 
-  Image, 
-  TouchableOpacity, 
-  Dimensions 
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  Image,
+  TouchableOpacity,
+  Dimensions,
+  Linking,
 } from 'react-native';
 import { useSession } from '@/components/auth/AuthProvider';
 import { Heart } from 'lucide-react-native';
@@ -21,6 +22,7 @@ type Submission = {
   author: {
     id: string;
     name: string;
+    profileLink?: string | null;
   };
   likes: number;
   hasLiked: boolean;
@@ -31,7 +33,7 @@ type ArtworkGridProps = {
   onRefresh: () => void;
 };
 
-export const ArtworkGrid: React.FC<ArtworkGridProps> = ({ 
+export const ArtworkGrid: React.FC<ArtworkGridProps> = ({
   submissions,
   onRefresh
 }) => {
@@ -40,12 +42,11 @@ export const ArtworkGrid: React.FC<ArtworkGridProps> = ({
   const [localSubmissions, setLocalSubmissions] = useState<Submission[]>(submissions);
   const windowWidth = Dimensions.get('window').width;
   const itemWidth = windowWidth <= 600 ? windowWidth / 2 - 32 : windowWidth / 3 - 32;
-  
-  // Update local submissions when prop changes
+
   useEffect(() => {
     setLocalSubmissions(submissions);
   }, [submissions]);
-  
+
   const handleLike = async (submissionId: string) => {
     if (!session) {
       Toast.show({
@@ -59,8 +60,7 @@ export const ArtworkGrid: React.FC<ArtworkGridProps> = ({
 
     try {
       setLoadingLikes(prev => ({ ...prev, [submissionId]: true }));
-      
-      // Update local state immediately
+
       setLocalSubmissions(prev => prev.map(submission => {
         if (submission.id === submissionId) {
           const newHasLiked = !submission.hasLiked;
@@ -72,16 +72,12 @@ export const ArtworkGrid: React.FC<ArtworkGridProps> = ({
         }
         return submission;
       }));
-      
-      // Make API call
+
       await likeArtwork(submissionId);
-      
-      // Refresh in background for consistency
       onRefresh();
     } catch (error) {
       console.error('Error liking artwork:', error);
-      
-      // Revert local state on error
+
       setLocalSubmissions(prev => prev.map(submission => {
         if (submission.id === submissionId) {
           const newHasLiked = !submission.hasLiked;
@@ -93,7 +89,7 @@ export const ArtworkGrid: React.FC<ArtworkGridProps> = ({
         }
         return submission;
       }));
-      
+
       Toast.show({
         type: 'error',
         text1: 'Error',
@@ -104,7 +100,7 @@ export const ArtworkGrid: React.FC<ArtworkGridProps> = ({
       setLoadingLikes(prev => ({ ...prev, [submissionId]: false }));
     }
   };
-  
+
   if (localSubmissions.length === 0) {
     return (
       <View style={styles.emptyContainer}>
@@ -114,108 +110,11 @@ export const ArtworkGrid: React.FC<ArtworkGridProps> = ({
       </View>
     );
   }
-  
-  const renderItem = ({ item }: { item: Submission }) => (
-    <View style={[styles.item, { width: itemWidth }]}>
-      <Image source={{ uri: item.imageUrl }} style={styles.image} />
-      <View style={styles.itemInfo}>
-        <Text style={styles.itemTitle} numberOfLines={1}>
-          {item.title || 'Untitled'}
-        </Text>
-        <Text style={styles.itemAuthor} numberOfLines={1}>
-          by {item.author.name || 'Anonymous'}
-        </Text>
-        <TouchableOpacity
-          style={styles.likeButton}
-          onPress={() => handleLike(item.id)}
-          disabled={loadingLikes[item.id]}
-        >
-          <Heart
-            size={16}
-            color={item.hasLiked ? COLORS.primary : COLORS.textSecondary}
-            fill={item.hasLiked ? COLORS.primary : 'none'}
-          />
-          <Text style={[
-            styles.likeCount,
-            item.hasLiked && styles.likedCount
-          ]}>
-            {item.likes}
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-  
-  return (
-    <>
-      <FlatList
-        data={localSubmissions}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        numColumns={windowWidth <= 600 ? 2 : 3}
-        columnWrapperStyle={styles.columnWrapper}
-        showsVerticalScrollIndicator={false}
-        scrollEnabled={false}
-      />
-      <Toast />
-    </>
-  );
-};
 
-const styles = StyleSheet.create({
-  columnWrapper: {
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  item: {
-    backgroundColor: COLORS.cardBackground,
-    borderRadius: 8,
-    overflow: 'hidden',
-    marginBottom: 16,
-  },
-  image: {
-    width: '100%',
-    aspectRatio: 1,
-  },
-  itemInfo: {
-    padding: 12,
-  },
-  itemTitle: {
-    fontFamily: 'PressStart2P',
-    fontSize: 10,
-    color: COLORS.text,
-    marginBottom: 4,
-  },
-  itemAuthor: {
-    fontFamily: 'PressStart2P',
-    fontSize: 8,
-    color: COLORS.textSecondary,
-    marginBottom: 8,
-  },
-  likeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  likeCount: {
-    fontFamily: 'PressStart2P',
-    fontSize: 8,
-    color: COLORS.textSecondary,
-  },
-  likedCount: {
-    color: COLORS.primary,
-  },
-  emptyContainer: {
-    padding: 24,
-    backgroundColor: COLORS.cardBackground,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontFamily: 'PressStart2P',
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    lineHeight: 24,
-  },
-});
+  const renderItem = ({ item }: { item: Submission }) => (
+    <View style={[styles.item,
+
+
+
+
+Se
