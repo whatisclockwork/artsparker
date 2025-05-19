@@ -112,9 +112,121 @@ export const ArtworkGrid: React.FC<ArtworkGridProps> = ({
   }
 
   const renderItem = ({ item }: { item: Submission }) => (
-    <View style={[styles.item,
+    <View style={[styles.item, { width: itemWidth }]}>
+      <Image source={{ uri: item.imageUrl }} style={styles.image} />
+      <View style={styles.itemInfo}>
+        <Text style={styles.itemTitle} numberOfLines={1}>
+          {item.title || 'Untitled'}
+        </Text>
+        <Text style={styles.itemAuthor} numberOfLines={1}>
+          by {item.author.name || 'Anonymous'}
+        </Text>
+        {item.author.profileLink ? (
+          <Text
+            style={styles.profileLink}
+            numberOfLines={1}
+            onPress={() => Linking.openURL(item.author.profileLink!)}
+          >
+            {item.author.profileLink}
+          </Text>
+        ) : null}
+        <TouchableOpacity
+          style={styles.likeButton}
+          onPress={() => handleLike(item.id)}
+          disabled={loadingLikes[item.id]}
+        >
+          <Heart
+            size={16}
+            color={item.hasLiked ? COLORS.primary : COLORS.textSecondary}
+            fill={item.hasLiked ? COLORS.primary : 'none'}
+          />
+          <Text style={[
+            styles.likeCount,
+            item.hasLiked && styles.likedCount
+          ]}>
+            {item.likes}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
 
+  return (
+    <>
+      <FlatList
+        data={localSubmissions}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        numColumns={windowWidth <= 600 ? 2 : 3}
+        columnWrapperStyle={styles.columnWrapper}
+        showsVerticalScrollIndicator={false}
+        scrollEnabled={false}
+      />
+      <Toast />
+    </>
+  );
+};
 
-
-
-Se
+const styles = StyleSheet.create({
+  columnWrapper: {
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  item: {
+    backgroundColor: COLORS.cardBackground,
+    borderRadius: 8,
+    overflow: 'hidden',
+    marginBottom: 16,
+  },
+  image: {
+    width: '100%',
+    aspectRatio: 1,
+  },
+  itemInfo: {
+    padding: 12,
+  },
+  itemTitle: {
+    fontFamily: 'PressStart2P',
+    fontSize: 10,
+    color: COLORS.text,
+    marginBottom: 4,
+  },
+  itemAuthor: {
+    fontFamily: 'PressStart2P',
+    fontSize: 8,
+    color: COLORS.textSecondary,
+  },
+  profileLink: {
+    fontFamily: 'PressStart2P',
+    fontSize: 7,
+    color: COLORS.accent,
+    textDecorationLine: 'underline',
+    marginBottom: 6,
+  },
+  likeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  likeCount: {
+    fontFamily: 'PressStart2P',
+    fontSize: 8,
+    color: COLORS.textSecondary,
+  },
+  likedCount: {
+    color: COLORS.primary,
+  },
+  emptyContainer: {
+    padding: 24,
+    backgroundColor: COLORS.cardBackground,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontFamily: 'PressStart2P',
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    lineHeight: 24,
+  },
+});
