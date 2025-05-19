@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  FlatList, 
-  Image, 
-  TouchableOpacity, 
-  Dimensions, 
-  Linking
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  Image,
+  TouchableOpacity,
+  Dimensions,
+  Linking,
 } from 'react-native';
 import { useSession } from '@/components/auth/AuthProvider';
 import { Heart } from 'lucide-react-native';
@@ -33,9 +33,9 @@ type ArtworkGridProps = {
   onRefresh: () => void;
 };
 
-export const ArtworkGrid: React.FC<ArtworkGridProps> = ({ 
+export const ArtworkGrid: React.FC<ArtworkGridProps> = ({
   submissions,
-  onRefresh
+  onRefresh,
 }) => {
   const { session } = useSession();
   const [loadingLikes, setLoadingLikes] = useState<Record<string, boolean>>({});
@@ -59,34 +59,39 @@ export const ArtworkGrid: React.FC<ArtworkGridProps> = ({
     }
 
     try {
-      setLoadingLikes(prev => ({ ...prev, [submissionId]: true }));
-      setLocalSubmissions(prev => prev.map(submission => {
-        if (submission.id === submissionId) {
-          const newHasLiked = !submission.hasLiked;
-          return {
-            ...submission,
-            hasLiked: newHasLiked,
-            likes: submission.likes + (newHasLiked ? 1 : -1)
-          };
-        }
-        return submission;
-      }));
+      setLoadingLikes((prev) => ({ ...prev, [submissionId]: true }));
+
+      setLocalSubmissions((prev) =>
+        prev.map((submission) => {
+          if (submission.id === submissionId) {
+            const newHasLiked = !submission.hasLiked;
+            return {
+              ...submission,
+              hasLiked: newHasLiked,
+              likes: submission.likes + (newHasLiked ? 1 : -1),
+            };
+          }
+          return submission;
+        })
+      );
 
       await likeArtwork(submissionId);
       onRefresh();
     } catch (error) {
       console.error('Error liking artwork:', error);
-      setLocalSubmissions(prev => prev.map(submission => {
-        if (submission.id === submissionId) {
-          const newHasLiked = !submission.hasLiked;
-          return {
-            ...submission,
-            hasLiked: !newHasLiked,
-            likes: submission.likes + (newHasLiked ? -1 : 1)
-          };
-        }
-        return submission;
-      }));
+      setLocalSubmissions((prev) =>
+        prev.map((submission) => {
+          if (submission.id === submissionId) {
+            const newHasLiked = !submission.hasLiked;
+            return {
+              ...submission,
+              hasLiked: !newHasLiked,
+              likes: submission.likes + (newHasLiked ? -1 : 1),
+            };
+          }
+          return submission;
+        })
+      );
 
       Toast.show({
         type: 'error',
@@ -95,7 +100,7 @@ export const ArtworkGrid: React.FC<ArtworkGridProps> = ({
         position: 'top',
       });
     } finally {
-      setLoadingLikes(prev => ({ ...prev, [submissionId]: false }));
+      setLoadingLikes((prev) => ({ ...prev, [submissionId]: false }));
     }
   };
 
@@ -110,7 +115,7 @@ export const ArtworkGrid: React.FC<ArtworkGridProps> = ({
   }
 
   const renderItem = ({ item }: { item: Submission }) => (
-    <View style={[styles.item, { width: itemWidth }]}> 
+    <View style={[styles.item, { width: itemWidth }]}>
       <Image source={{ uri: item.imageUrl }} style={styles.image} />
       <View style={styles.itemInfo}>
         <Text style={styles.itemTitle} numberOfLines={1}>
@@ -119,16 +124,14 @@ export const ArtworkGrid: React.FC<ArtworkGridProps> = ({
         <Text style={styles.itemAuthor} numberOfLines={1}>
           by {item.author.name || 'Anonymous'}
         </Text>
-        {item.author.profileLink && (
-          <TouchableOpacity 
-            onPress={() => Linking.openURL(item.author.profileLink!)}
+        {item.author.profileLink ? (
+          <TouchableOpacity
             style={styles.profileLinkContainer}
+            onPress={() => Linking.openURL(item.author.profileLink!)}
           >
-            <Text style={styles.profileLink} numberOfLines={1}>
-              {item.author.profileLink}
-            </Text>
+            <Text style={styles.profileLink}>{item.author.profileLink}</Text>
           </TouchableOpacity>
-        )}
+        ) : null}
         <TouchableOpacity
           style={styles.likeButton}
           onPress={() => handleLike(item.id)}
@@ -139,10 +142,9 @@ export const ArtworkGrid: React.FC<ArtworkGridProps> = ({
             color={item.hasLiked ? COLORS.primary : COLORS.textSecondary}
             fill={item.hasLiked ? COLORS.primary : 'none'}
           />
-          <Text style={[
-            styles.likeCount,
-            item.hasLiked && styles.likedCount
-          ]}>
+          <Text
+            style={[styles.likeCount, item.hasLiked && styles.likedCount]}
+          >
             {item.likes}
           </Text>
         </TouchableOpacity>
@@ -203,6 +205,9 @@ const styles = StyleSheet.create({
     fontFamily: 'PressStart2P',
     fontSize: 10,
     color: COLORS.textTertiary,
+    flexShrink: 1,
+    flexWrap: 'wrap',
+    width: '100%',
   },
   likeButton: {
     flexDirection: 'row',
